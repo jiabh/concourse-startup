@@ -1,0 +1,33 @@
+---
+resources:
+  - name: simple-python-repo
+    type: git
+    icon: github
+    source:
+      uri: git@github.com:jiabh/simple-python.git
+      branch: master
+      private_key: ((github-pri-key))
+
+jobs:
+  - name: run-program
+    plan:
+      - get: simple-python-repo
+        trigger: true
+
+      - task: start-program
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: python
+              tag: 3.9.15-slim
+          inputs:
+            - name: simple-python-repo
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                cd simple-python-repo/
+                python main.py
