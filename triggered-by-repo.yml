@@ -30,4 +30,27 @@ jobs:
               - -c
               - |
                 cd simple-python-repo/
+                python -m pip install --upgrade pip
+                pip install -r requirements.txt
                 python main.py
+
+  - name: echo-hello-world
+    plan:
+      - get: simple-python-repo
+        passed: [ run-program ]
+        trigger: true
+
+      - task: echo
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: busybox
+              tag: 1.35.0
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                echo Hello world!
