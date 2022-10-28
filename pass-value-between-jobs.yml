@@ -1,0 +1,38 @@
+---
+jobs:
+  - name: print-text-to-file
+    plan:
+      - task: hello-world-task
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: busybox
+              tag: 1.35.0
+          outputs:
+            - name: some-files
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                echo Hello world! > some-files/out.txt
+
+      - task: show-some-files
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: busybox
+              tag: 1.35.0
+          inputs:
+            - name: some-files
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                ls -a
+                cat some-files/out.txt
