@@ -1,0 +1,61 @@
+resources:
+  - name: simple-python-repo
+    type: git
+    icon: github
+    source:
+      uri: git@github.com:jiabh/simple-python.git
+      branch: master
+      private_key: ((github-pri-key))
+      tag_regex: "v*.*.*"
+      fetch_tags: true
+
+jobs:
+  - name: get-git-tag
+    plan:
+      - get: simple-python-repo
+        params:
+          depth: 1
+        trigger: true
+
+      - task: get-tag
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: bitnami/git
+              tag: 2.38.1
+          inputs:
+            - name: simple-python-repo
+          outputs:
+            - name: git-tag
+          params:
+            TERM: cygwin
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                cd simple-python-repo/
+                tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+                echo "Git tag: $tag"
+                cd ..
+                
+                echo $tag > git-tag/version.txt
+
+      - task: print-tag
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: ubuntu
+              tag: "22.10"
+          inputs:
+            - name: git-tag
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                cat git-tag/version.txt
